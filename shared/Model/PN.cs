@@ -20,7 +20,7 @@ public class PN : Ordination {
     
  //________________   
     // Tjekke om givesDen ligger indenfor startDen og slutDen
-    // Hvis ja → læg datoen i dates, og returnér true
+    // Hvis ja → læg datoen i dates, og returner true
     // Hvis nej → ignorer den og returner false
     public bool givDosis(Dato givesDen) {
         // TODO: Implement!

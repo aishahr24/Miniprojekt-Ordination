@@ -45,42 +45,32 @@ public class ServiceTest
 
     [TestMethod]
     [ExpectedException(typeof(ArgumentNullException))]
-    public void TestAtKodenSmiderEnException()
+    public void TestAtKodenSmiderEnException()    
     {
-        // Herunder skal man så kalde noget kode,
-        // der smider en exception.
 
-        // Hvis koden _ikke_ smider en exception,
-        // så fejler testen.
+        service.SeedData(); // Forberedelse af testdata
 
-        // Arrange
-        service.SeedData();
-
-        // Act - her kaldes med null, som skal kaste ArgumentNullException
+        // her kaldes med null --> skal kaste ArgumentNullException
         service.AnvendOrdination(1, null!);
 
-        // Assert er ikke nødvendig, da [ExpectedException] fanger resultatet
     }
     
     
-//__________________________________________ andre testmetoder jeg har tilføjet:
+//__________________________________________ 
     [TestMethod]
     public void TestOpretPN()
     {
-            // Arrange
-            service.SeedData(); // Fylder patienter og lægemidler ind
+            service.SeedData(); 
 
             var start = new DateTime(2025, 4, 1); //  start- og slutdato for ordinationen
             var slut = new DateTime(2025, 4, 5);
             double antal = 2; // dosen pr. gang =  2 enheder hver gang medicinen gives
 
-            int patientId = 1; // antager at id = 1 findes efter SeedData()
-            int laegemiddelId = 1; // antager at id = 1 findes efter SeedData()
+            int patientId = 1; // antagelse at id = 1 findes efter SeedData()
+            int laegemiddelId = 1; // antagelse at id = 1 findes efter SeedData()
 
-            // Act
             var ordination = service.OpretPN(patientId, laegemiddelId, antal, start, slut);
 
-            // Assert
             Assert.IsNotNull(ordination);
             Assert.AreEqual(antal, ordination.antalEnheder);
             Assert.AreEqual(start, ordination.startDen);
@@ -92,18 +82,20 @@ public class ServiceTest
     [TestMethod] //Man kan registrere en dosis på en gyldig dato
     public void TestAnvendOrdination()
     {
-        // Arrange
-        service.SeedData(); // Fylder patienter og ordinationer ind
+        service.SeedData();
 
-        // Vi antager at der findes en PN-ordination med ID = 1
-        int ordinationId = 1;
-        var dato = new shared.Model.Dato(); // tomt objekt 
-        dato.dato = new DateTime(2025, 4, 2); // sæt datoen manuelt
-        
-        // Act
-        string resultat = service.AnvendOrdination(ordinationId, dato); // Kaldes med gyldig ordination og dato
+        // Henter første gyldige PN-ordination fra databasen
+        Ordination ordination = service.GetPNs().First(); // PN arver fra Ordination
+        int ordinationId = ordination.OrdinationId;
 
-        // Assert
+        // Opreter dato indenfor ordinationens gyldighedsperiode
+        var dato = new Dato();
+        dato.dato = ordination.startDen.AddDays(1); 
+
+        // prøver at registrere en dosis
+        string resultat = service.AnvendOrdination(ordinationId, dato);
+
+        // tjekker om det lykkedes
         Assert.IsTrue(resultat.Contains("Dosis givet den"));
     }
     
@@ -111,12 +103,11 @@ public class ServiceTest
     [TestMethod] // beregner en anbefalet daglig dosis baseret på patientens vægt og lægemidlets faktorer.
     public void TestAnbefaletDosisPerDøgn()
     {
-        // Arrange
-        service.SeedData(); // vi kalder SeedData() for at fylde databasen med testdata
+        
+        service.SeedData(); 
         int patientId = 1;
         int laegemiddelId = 1;
 
-        // Act
         double dosis = service.GetAnbefaletDosisPerDøgn(patientId, laegemiddelId);
 
         // Assert
@@ -127,7 +118,6 @@ public class ServiceTest
     [TestMethod] // tjekker,om man kan registrere en dosis som givet, hvis datoen er indenfor ordinationens periode.
     public void TestPN_GivDosis_GyldigDato()
     {
-        // Arrange
         // Opretter et lægemiddel
         Laegemiddel lm = new Laegemiddel("TestMedicin", 1.0, 1.5, 2.0, "ml");
 
@@ -135,52 +125,77 @@ public class ServiceTest
         DateTime start = new DateTime(2025, 4, 1);
         DateTime slut = new DateTime(2025, 4, 5);
 
-        // Opretter PN-ordination med 2 enheder pr. gang
+        // opretter PN-ordination med 2 enheder pr gang
         PN pn = new PN(start, slut, 2, lm);
 
-        // Opretter en dato (2. april) som ligger indenfor perioden
+        // opretter en dato som ligger indenfor perioden
         Dato dato = new Dato();
         dato.dato = new DateTime(2025, 4, 2);
 
-        // Act - vi udfører handlingen: giver dosis på 2. april
+        // udfører handlingen: giver dosis på 2/april
         bool resultat = pn.givDosis(dato);
 
-        // - vi tjekker resultatet
 
         // Bekræfter at metoden returnerede true (dosis blev givet)
         Assert.IsTrue(resultat);
 
-        // Bekræfter at der nu er registreret én dosis i PN-ordinationen
+        // Bekræfter at der nu er registreret en dosis i PN-ordinationen
         Assert.AreEqual(1, pn.getAntalGangeGivet());
     }
-    //__________________________ (kan måske sletes senere!)
-    // Denne test sikrer, at DataService ikke tillader, at man registrerer en dosis udenfor ordinationens gyldighedsperiode.
-    // Hvis datoen er udenfor, så skal systemet returnere en fejlbesked ("udenfor perioden").
+    //__________________________  
+    // her sikrer, at DataService ikke tillader at man registrerer en dosis udenfor ordinationens gyldighedsperiode
+    // hvis datoen er udenfor, så skal systemet returnere en fejlbesked ("udenfor perioden")
     [TestMethod]
     public void TestAnvendOrdination_UgyldigDato()
     {
-        // Arrange – Forberedelse af testdata
-
         // Fylder databasen med patienter, lægemidler og ordinationer
         service.SeedData();
 
         // Antager at der findes en ordination med ID = 1 fra SeedData
         int ordinationId = 1;
 
-        // Opretter en dato som er udenfor gyldighedsperioden (10. april 2025)
+        // Opretter en dato som er udenfor gyldighedsperioden
         Dato dato = new Dato();
         dato.dato = new DateTime(2025, 4, 10);
 
-        // Act – Udfører handlingen vi vil teste
 
         // Forsøger at anvende ordinationen på en ugyldig dato
         string resultat = service.AnvendOrdination(ordinationId, dato);
 
-        // Assert – Kontrollerer resultatet
 
         // Forventer at resultatet indeholder ordet "udenfor", som tegn på fejl
         Assert.IsTrue(resultat.Contains("udenfor"));
     }
+//________________________________ 
+// sikrer, at man ikke kan registrere en dosis på en forkert dato (udenfor ordinationens periode) for en PN-ordination.
+
+       [TestMethod]
+       public void TestPN_GivDosis_UgyldigDato()
+       {
+           // Opretter et lægemiddel med vilkårlige faktorer
+           Laegemiddel lm = new Laegemiddel("TestMedicin", 1.0, 1.5, 2.0, "ml");
+
+           // Definerer start- og slutdato for ordinationen: 1. april til 5. april 2025
+           DateTime start = new DateTime(2025, 4, 1);
+           DateTime slut = new DateTime(2025, 4, 5);
+
+           // Opretter en PN-ordination (2 enheder pr. gang)
+           PN pn = new PN(start, slut, 2, lm);
+
+           // Opretter en dato (10. april 2025) som er UDENFOR ordinationens gyldighedsperiode
+           Dato dato = new Dato();
+           dato.dato = new DateTime(2025, 4, 10);
+           
+           // Forsøger at give en dosis på en ugyldig dato
+           bool resultat = pn.givDosis(dato);
+           
+           // Forventer at resultatet er false, fordi datoen er udenfor gyldig periode
+           Assert.IsFalse(resultat);
+
+           // Forventer at der ikke er registreret nogen dosis (antal givninger = 0)
+           Assert.AreEqual(0, pn.getAntalGangeGivet());
+       }
+   
     
  // ________________________  kontrollerer, at man kan oprette en DagligSkæv-ordination korrekt gennem DataService.
  // Den tjekker:
@@ -191,14 +206,14 @@ public class ServiceTest
  [TestMethod]
  public void TestOpretDagligSkaev()
  {
-     // Arrange – fyld databasen med patienter og lægemidler
+     // fyld databasen med patienter og lægemidler
      service.SeedData();
      Patient patient       = service.GetPatienter().First();
      Laegemiddel laegemiddel = service.GetLaegemidler().First();
      DateTime startDato    = new DateTime(2025, 4, 1);
      DateTime slutDato     = new DateTime(2025, 4, 5);
 
-     // Opret array af doser, som DataService forventer
+     // opret array af doser, som DataService forventer
      Dosis[] doser = new Dosis[]
      {
          new Dosis(CreateTimeOnly( 8,  0,  0), 1.0),  // Morgen: 1 enhed
@@ -206,7 +221,7 @@ public class ServiceTest
          new Dosis(CreateTimeOnly(18,  0,  0), 1.5)   // Aften: 1.5 enhed
      };
 
-     // Act – kald præcis den metode du har i DataService
+     // kald præcis den metode du har i DataService
      var ordination = service.OpretDagligSkaev(
          patient.PatientId,
          laegemiddel.LaegemiddelId,
@@ -215,7 +230,7 @@ public class ServiceTest
          slutDato
      );
 
-     // Assert – kontroller, at alt blev oprettet korrekt
+     // kontroller, at alt blev oprettet korrekt
      Assert.IsNotNull(ordination);                         // Der skal være et objekt
      Assert.AreEqual(startDato,    ordination.startDen);  // Startdato skal være korrekt
      Assert.AreEqual(slutDato,     ordination.slutDen);   // Slutdato skal være korrekt

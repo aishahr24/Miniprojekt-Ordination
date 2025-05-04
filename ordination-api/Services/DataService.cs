@@ -14,10 +14,7 @@ public class DataService
     public DataService(OrdinationContext db) {
         this.db = db;
     }
-
-    /// <summary>
-    /// Seeder noget nyt data i databasen, hvis det er nødvendigt.
-    /// </summary>
+    
     public void SeedData() {
 
         // Patients
@@ -132,20 +129,20 @@ public class DataService
 //________________________ PN = Pro Necessitate "efter behov"
     public PN OpretPN(int patientId, int laegemiddelId, double antal, DateTime startDato, DateTime slutDato) { // Opret en ny PN-ordination for en patient
         // TODO: Implement!
-        // Find patienten i databasen eller kast fejl hvis ikke fundet
+        // Finder patienten i databasen eller kaster fejl hvis ikke fundet
         Patient patient = db.Patienter.Find(patientId) ?? throw new Exception("Patient ikke fundet");
 
-        // Find lægemidlet i databasen eller kast fejl hvis ikke fundet
+        // Finder lægemidlet i databasen eller kaster fejl hvis ikke fundet
         Laegemiddel laegemiddel = db.Laegemiddler.Find(laegemiddelId) ?? throw new Exception("Lægemiddel ikke fundet");
 
-        // Opret ny PN-ordination (antal = hvor meget medicin pr. gang)
+        // Opreter ny PN-ordination (antal = hvor meget medicin pr. gang)
         var ordination = new PN(startDato, slutDato, antal, laegemiddel);
 
-        // Tilføj ordinationen til databasen og til patientens liste
+        // Tilføjer ordinationen til databasen og til patientens liste
         db.Ordinationer.Add(ordination);
         patient.ordinationer.Add(ordination);
 
-        // Gem ændringerne i databasen
+        // Gemmer ændringerne i databasen
         db.SaveChanges();
 
         // Returner ordinationen
@@ -171,13 +168,13 @@ public class DataService
 //___________________________ Patienten får medicin hver dag, men på forskellige tidspunkter og med forskellige doser
     public DagligSkæv OpretDagligSkaev(int patientId, int laegemiddelId, Dosis[] doser, DateTime startDato, DateTime slutDato) {
         // TODO: Implement!
-        // Find patienten i databasen baseret på ID eller kast fejl
+        // Finder patienten i databasen baseret på ID eller kaster fejl
         Patient patient = db.Patienter.Find(patientId) ?? throw new Exception("Patient ikke fundet");
 
-        // Find lægemidlet i databasen baseret på ID eller kast fejl
+        // Finder lægemidlet i databasen baseret på ID eller kaster fejl
         Laegemiddel laegemiddel = db.Laegemiddler.Find(laegemiddelId) ?? throw new Exception("Lægemiddel ikke fundet");
 
-        // Opret en ny DagligSkæv-ordination med doser (doser konverteres til array)
+        // Opreter en ny DagligSkæv-ordination med doser (doser konverteres til array)
         var ordination = new DagligSkæv(startDato, slutDato, laegemiddel, doser.ToArray());
 
         // Tilføj ordinationen til databasen
@@ -196,26 +193,26 @@ public class DataService
 //___________________________ registrere en dosis som givet, men kun for PN-ordinationer
     public string AnvendOrdination(int id, Dato dato) { 
         // TODO: Implement!
-        // 1) Tjek for null – hvis dato er null, kast ArgumentNullException
+        // 1) Tjekker for null – hvis dato er null, kast ArgumentNullException
         if (dato is null)
             throw new ArgumentNullException(nameof(dato));
 
-        // 2) Hent ordinationen fra databasen på baggrund af id
+        // 2) Henter ordinationen fra databasen på baggrund af id
         //    Hvis ikke fundet, kast Exception
         Ordination ordination = db.Ordinationer.Find(id)
                                 ?? throw new Exception("Ordination ikke fundet");
 
-        // 3) Tjek om det er en PN-ordination (efter behov)
+        // 3) Tjeker om det er en PN-ordination (efter behov)
         if (ordination is PN pn)
         {
-            // 4) Forsøg at registrere dosis på den angivne dato
+            // 4) Forsøger at registrere dosis på den angivne dato
             bool succes = pn.givDosis(dato);
 
             if (succes)
             {
                 // 5) Hvis registreringen lykkedes, gem i databasen
                 db.SaveChanges();
-                // 6) Returnér bekræftelsesbesked med dato
+                // 6) Returner bekræftelsesbesked med dato
                 return $"Dosis givet den {dato.dato.ToShortDateString()}";
             }
             else
@@ -247,13 +244,13 @@ public class DataService
     // formel; vægt * faktor = anbefalet døgndosis
 	public double GetAnbefaletDosisPerDøgn(int patientId, int laegemiddelId) {
         // TODO: Implement!
-        // Find patient og lægemiddel i databasen
+        // Finder patient og lægemiddel i databasen
         Patient patient = db.Patienter.Find(patientId) ?? throw new Exception("Patient ikke fundet");
         Laegemiddel laegemiddel = db.Laegemiddler.Find(laegemiddelId) ?? throw new Exception("Lægemiddel ikke fundet");
 
         double faktor;
 
-        // Vælg faktor ud fra patientens vægt
+        // Vælger faktor ud fra patientens vægt
         if (patient.vaegt < 25)
         {
             faktor = laegemiddel.enhedPrKgPrDoegnLet;

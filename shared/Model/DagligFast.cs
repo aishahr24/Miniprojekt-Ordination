@@ -24,7 +24,7 @@ public class DagligFast : Ordination {
 	}
 
 	public override double doegnDosis() {
-		// har tilføjet det
+		// har tilføjet 
 		return MorgenDosis.antal + MiddagDosis.antal + AftenDosis.antal + NatDosis.antal;
 	}
 	
@@ -38,4 +38,3 @@ public class DagligFast : Ordination {
 	}
 }
 
-// Delet  
