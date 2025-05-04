@@ -17,7 +17,7 @@ public class PatientTest
         Assert.AreEqual(navn, patient.navn);
     }
 
-
+ 
     [TestMethod]
     public void TestDerAltidFejler()
     {
