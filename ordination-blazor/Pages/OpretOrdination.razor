@@ -65,6 +65,8 @@
     private enum State { Start, OpretPN, OpretFast, OpretSkaev }
     private State PageState = State.Start;
     private string message { get; set; } = "";
+   
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -128,4 +130,6 @@
             PageState = State.OpretSkaev;
         }
     }
+
+
 }

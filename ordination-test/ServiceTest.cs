@@ -55,7 +55,13 @@ public class ServiceTest
 
     }
     
-    
+    [TestMethod]
+    [ExpectedException(typeof(Exception), "Patient ikke fundet")]
+    public void TestOpretPN_PatientIkkeFundet()
+    {
+        service.OpretPN(99, 1, 2, DateTime.Now, DateTime.Now.AddDays(1));
+    }
+
 //__________________________________________ 
     [TestMethod]
     public void TestOpretPN()
