@@ -150,7 +150,7 @@ public class ServiceTest
     {
         // Fylder databasen med patienter, lægemidler og ordinationer
         service.SeedData();
-
+ 
         // Antager at der findes en ordination med ID = 1 fra SeedData
         int ordinationId = 1;
 

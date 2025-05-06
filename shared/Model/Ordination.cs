@@ -21,7 +21,6 @@ public abstract class Ordination {
     /// Antal hele dage mellem startdato og slutdato. Begge dage inklusive.
     /// </summary>
     public int antalDage() {
-        // TODO: Implement!
         // fordi der skal altid regnes i hele dage, hvor start- og slutdato er inklusive
         return (slutDen - startDen).Days + 1; // her udregner antal dage mellem datoerne,(+1) fordi uden at tælle startdagen med.
         

@@ -24,7 +24,6 @@ public class DagligSkæv : Ordination {
 	}
 
 	public override double doegnDosis() {
-		// TODO: Implement!
 		// returnere den samlede mængde medicin per dag.
 		return doser.Sum(d => d.antal); // Gå igennem hele listen (doser) og læg alle antal værdier sammen.
         

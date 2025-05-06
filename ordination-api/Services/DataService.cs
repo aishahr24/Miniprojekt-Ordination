@@ -127,8 +127,7 @@ public class DataService
         return db.Laegemiddler.ToList();
     }
 //________________________ PN = Pro Necessitate "efter behov"
-    public PN OpretPN(int patientId, int laegemiddelId, double antal, DateTime startDato, DateTime slutDato) { // Opret en ny PN-ordination for en patient
-        // TODO: Implement!
+    public PN OpretPN(int patientId, int laegemiddelId, double antal, DateTime startDato, DateTime slutDato) { // Opretter en ny PN-ordination for en patient
         // Finder patienten i databasen eller kaster fejl hvis ikke fundet
         Patient patient = db.Patienter.Find(patientId) ?? throw new Exception("Patient ikke fundet");
 
@@ -153,7 +152,6 @@ public class DataService
         double antalMorgen, double antalMiddag, double antalAften, double antalNat, 
         DateTime startDato, DateTime slutDato) {
 
-        // TODO: Implement!
         Patient patient = db.Patienter.Find(patientId) ?? throw new Exception("Patient ikke fundet"); // Finder patienten i databasen
         Laegemiddel laegemiddel = db.Laegemiddler.Find(laegemiddelId) ?? throw new Exception("Lægemiddel ikke fundet"); // Finder medicinen
 
@@ -162,12 +160,11 @@ public class DataService
 
         patient.ordinationer.Add(ordination); // 	Kobler den til patienten
 
-        db.SaveChanges(); // Gemmer alt i databasen
+        db.SaveChanges(); 
         return ordination;
     }
 //___________________________ Patienten får medicin hver dag, men på forskellige tidspunkter og med forskellige doser
     public DagligSkæv OpretDagligSkaev(int patientId, int laegemiddelId, Dosis[] doser, DateTime startDato, DateTime slutDato) {
-        // TODO: Implement!
         // Finder patienten i databasen baseret på ID eller kaster fejl
         Patient patient = db.Patienter.Find(patientId) ?? throw new Exception("Patient ikke fundet");
 
@@ -183,7 +180,7 @@ public class DataService
         // Tilføj ordinationen til patientens ordinationsliste
         patient.ordinationer.Add(ordination);
 
-        // Gem alle ændringer i databasen
+        
         db.SaveChanges();
 
         // Returner den nye ordination
@@ -192,38 +189,37 @@ public class DataService
     
 //___________________________ registrere en dosis som givet, men kun for PN-ordinationer
     public string AnvendOrdination(int id, Dato dato) { 
-        // TODO: Implement!
-        // 1) Tjekker for null – hvis dato er null, kast ArgumentNullException
+        // Tjekker for null – hvis dato er null, kast ArgumentNullException
         if (dato is null)
             throw new ArgumentNullException(nameof(dato));
 
-        // 2) Henter ordinationen fra databasen på baggrund af id
+        // Henter ordinationen fra databasen på baggrund af id
         //    Hvis ikke fundet, kast Exception
         Ordination ordination = db.Ordinationer.Find(id)
                                 ?? throw new Exception("Ordination ikke fundet");
 
-        // 3) Tjeker om det er en PN-ordination (efter behov)
+        // Tjeker om det er en PN-ordination (efter behov)
         if (ordination is PN pn)
         {
-            // 4) Forsøger at registrere dosis på den angivne dato
+            // Forsøger at registrere dosis på den angivne dato
             bool succes = pn.givDosis(dato);
 
             if (succes)
             {
-                // 5) Hvis registreringen lykkedes, gem i databasen
+                // Hvis registreringen lykkedes, gem i databasen
                 db.SaveChanges();
                 // 6) Returner bekræftelsesbesked med dato
                 return $"Dosis givet den {dato.dato.ToShortDateString()}";
             }
             else
             {
-                // 7) Hvis dato er udenfor perioden, returnér fejlbesked
+                // Hvis dato er udenfor perioden, returner fejlbesked
                 return $"Dato {dato.dato.ToShortDateString()} er udenfor ordinationens periode";
             }
         }
         else
         {
-            // 8) Hvis ordinationen ikke er PN-type, returnér relevant besked
+            // Hvis ordinationen ikke er PN-type, returnér relevant besked
             return "Ordinationen er ikke en PN-ordination og kan ikke anvendes manuelt";
         }
     }
@@ -264,7 +260,7 @@ public class DataService
             faktor = laegemiddel.enhedPrKgPrDoegnNormal;
         }
 
-        // Udregn anbefalet dosis
+        // Udregner anbefalet dosis
         double dosis = patient.vaegt * faktor;
 
         return dosis;

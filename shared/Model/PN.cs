@@ -23,7 +23,6 @@ public class PN : Ordination {
     // Hvis ja → læg datoen i dates, og returner true
     // Hvis nej → ignorer den og returner false
     public bool givDosis(Dato givesDen) {
-        // TODO: Implement!
         if (givesDen.dato >= startDen && givesDen.dato <= slutDen)
         {
 	        dates.Add(givesDen);
@@ -35,7 +34,6 @@ public class PN : Ordination {
     
     // beregne gennemsnitlig døgndosis, kun i den periode hvor der gives medicin, og kun mellem første og sidste dato
     public override double doegnDosis() {
-    	// TODO: Implement!
 	    if (dates.Count == 0)
 		    return 0; // hvis medicinen er ikke givet (dates er tøm) så retunere 0, --> da vi ikke kan udregne noget
 
